@@ -5,11 +5,15 @@ class Flags extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      rightAnwer: { name: null, flag: null },
-      flags: [],
-      countries: []
+      answers: [],
+      points: 0,
+      countries: [],
+      seconds: 300
     };
   }
+
+  randomInt = getRandomInt(0, 4);
+  countdown;
 
   componentWillMount() {
     this.props
@@ -26,38 +30,75 @@ class Flags extends Component {
   }
 
   getRightAnswer = () => {
-    let rightAnwer = { ...this.state.rightAnwer };
-    const randomInt = getRandomInt(0, this.state.countries.length + 1);
-    rightAnwer.name = this.state.countries[randomInt].name;
-    rightAnwer.flag = this.state.countries[randomInt].flag;
-    this.setState({
-      rightAnwer
-    });
+    let answers = [];
+    for (let j = 0; j < 4; j++) {
+      const country = { name: '', flag: '' };
+      const randomInt = getRandomInt(0, this.state.countries.length + 1);
+      country.name = this.state.countries[randomInt].name;
+      country.flag = this.state.countries[randomInt].flag;
+      answers.push(country);
+    }
+    this.setState(
+      {
+        answers
+      },
+      () => this.timer(30)
+    );
+  };
+
+  evaluateAnswer = index => {
+    if (index === this.randomInt) {
+      this.setState({
+        points: this.state.points + 1
+      });
+      this.getRightAnswer();
+    }
+  };
+
+  timer = seconds => {
+    // clear any existing timers
+    clearInterval(this.countdown);
+
+    const now = Date.now();
+    const then = now + seconds * 1000;
+
+    this.countdown = setInterval(() => {
+      const secondsLeft = Math.round((then - Date.now()) / 1000);
+      // check if we should stop it!
+      if (secondsLeft < 0) {
+        clearInterval(this.countdown);
+        return;
+      }
+      // display it
+      this.setState({
+        seconds: secondsLeft
+      });
+    }, 1000);
   };
 
   render() {
     return (
       <div className="container-fluid">
-        {this.state.countries && (
+        {this.state.answers[0] && (
           <div>
-            <h1 />
             <div class="card text-center">
               <div class="card-header">
-                What is the flag of {this.state.rightAnwer.name}{' '}
+                What is the flag of {this.state.answers[this.randomInt].name}{' '}
+              </div>
+              <div className="card-body d-flex flex-wrap justify-content-center">
+                {this.state.answers.map((country, index) => {
+                  return (
+                    <img
+                      className="flag "
+                      src={this.state.answers[index].flag}
+                      onClick={() => this.evaluateAnswer(index)}
+                    />
+                  );
+                })}
               </div>
             </div>
-
-            <div class="progress">
-              <div
-                className="progress-bar bg-success"
-                role="progressbar"
-                style={{ width: `${getRandomInt(0, 101)}%` }}
-                aria-valuenow="25"
-                aria-valuemin="0"
-                aria-valuemax="100"
-              />
-            </div>
-            <img src={this.state.rightAnwer.flag} />
+            <h1> Points: {this.state.points}</h1>
+            <h1> Seconds: {this.state.seconds}</h1>
           </div>
         )}
       </div>
