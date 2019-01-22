@@ -8,7 +8,7 @@ class Flags extends Component {
       answers: [],
       points: 0,
       countries: [],
-      seconds: 300
+      seconds: 0
     };
   }
 
